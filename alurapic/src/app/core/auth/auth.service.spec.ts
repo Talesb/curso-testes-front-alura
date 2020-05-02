@@ -1,5 +1,5 @@
 import { AuthService } from "./auth.service"
-import { TestBed } from "@angular/core/testing"
+import { TestBed, fakeAsync, tick } from "@angular/core/testing"
 import { HttpClientTestingModule, HttpTestingController } from "@angular/common/http/testing";
 import { UserService } from "../user/user.service";
 
@@ -8,7 +8,7 @@ describe('O serviço de AuthService', () => {
 
     let service: AuthService;
     let httpMock: HttpTestingController;
-    let userService:UserService;
+    let userService: UserService;
 
 
     beforeEach(() => {
@@ -27,20 +27,20 @@ describe('O serviço de AuthService', () => {
     });
 
 
-    it('Deve autenticar o usuario', () => {
+    it('Deve autenticar o usuario', fakeAsync(() => {
         const fakeBody = {
             id: 1,
             nome: 'alvaro',
             email: 'alvaro@alura.com'
         };
 
-        spyOn(userService,"setToken").and.returnValue(null);
+        const  spy = spyOn(userService, "setToken").and.returnValue(null);
 
         service.authenticate('alvaro', '1234').subscribe(response => {
             expect(response.body).toEqual(fakeBody);
-            expect(response.headers.get('x-acess-token')).toBe('tokenTest');
+            expect(spy).toHaveBeenCalled();
+            expect(spy).toHaveBeenCalledWith('tokenTest');
         });
-
 
         const request = httpMock.expectOne((req) => {
             return req.method === 'POST';
@@ -48,13 +48,12 @@ describe('O serviço de AuthService', () => {
 
         request.flush(fakeBody, {
             headers: {
-                'x-acess-token': 'tokenTest'
+                'x-access-token': 'tokenTest'
             }
         })
-    });
 
+        tick();
 
-
-
+    }));
 
 })
